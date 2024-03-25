@@ -1,0 +1,24 @@
+version: 0.2
+
+environment_variables:
+  plaintext:
+    HUGO_VERSION: "0.124.1"
+    
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+    commands:                                                                 
+      - cd /tmp
+      - CGO_ENABLED=1 go install -tags extended github.com/gohugoio/hugo@latest
+      - mv ~/go/bin/hugo ~/bin/hugo
+      - cd - 
+      - rm -rf /tmp/*
+  build:
+    commands:
+      - rm -rf public
+      - hugo
+      - aws s3 sync public/ s3://hugostatic/ --region us-east-2 --delete
+  post_build:
+    commands:
+      - echo Build completed on `date`
